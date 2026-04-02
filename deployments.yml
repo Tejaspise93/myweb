@@ -1,21 +1,49 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mywebdeployment
+  name: myweb
   labels:
     app: myweb
 spec:
-  replicas: 6
+  replicas: 2
   selector:
     matchLabels:
       app: myweb
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       labels:
         app: myweb
     spec:
       containers:
-      - name: myweb
-        image: jaggarapup/b047final-v4
-        ports:
-        - containerPort: 8080
+        - name: myweb
+          image: tejaspise/myweb:IMAGE_TAG_PLACEHOLDER
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /myweb
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /myweb
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
